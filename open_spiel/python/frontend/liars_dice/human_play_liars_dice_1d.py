@@ -27,7 +27,7 @@ for _ in range(NUM_GAMES):
     else:
       current_player = state.current_player()
       if current_player == 1:
-          print(state)
+          print(f'observation {state.observation_tensor(current_player)}')
       action = bots[current_player].step(state)
       state.apply_action(action)
   if state.returns()[1] > 0:
