@@ -50,15 +50,15 @@ class PolicyNetworkBot(pyspiel.Bot):
     inp = (info_state_vector, legal_action_mask)
     probs = self._policy.call(inp).numpy()
     action_probs = [probs[0][action] for action in legal_actions]
-    print(legal_actions)
-    print(action_probs)
-    print(sum(action_probs))
+    #print(legal_actions)
+    #print(action_probs)
     action_probs=np.array(action_probs)
-    print(action_probs)
+    #print(action_probs)
     chosen_action = self._rng.choice(legal_actions, p=action_probs)
     for i,x in enumerate(legal_actions):
         print(f'{x} : {state.action_to_string(x)} : {action_probs[i]}')
     print(f'choosing {chosen_action}')
+    print('----')
     return chosen_action
 
   def step(self, state):
@@ -67,7 +67,7 @@ class PolicyNetworkBot(pyspiel.Bot):
 def main():
   policy_network = tf.keras.models.load_model('policy_network',compile=False)
   #NUM_GAMES=10000
-  NUM_GAMES=1
+  NUM_GAMES=15
   p1_wins=0
   p2_wins=0
   draws=0
@@ -84,52 +84,24 @@ def main():
         action = np.random.choice(outcomes, p=probs)
         state.apply_action(action)
       else:
+        print(f'state {state}')
         current_player = state.current_player()
         action = bots[current_player].step(state)
         state.apply_action(action)
     if state.returns()[1] > 0:
       p2_wins+=1
-      print(f'state {state}')
+      #print(f'state {state}')
+      print(f'p2 (random) wins!')
     elif state.returns()[0] > 0:
       p1_wins+=1
-      print(f'state {state}')
+      print(f'p1 (policy) wins!')
+      #print(f'state {state}')
     else:
       draws+=1
   print(f'p1 (policy) wins: {p1_wins}')
   print(f'p2 (random) wins: {p2_wins}')
   print(f'draws: {draws}')
 
-
-
-
-
-
-
-  #while state.is_chance_node():
-    ##outcomes, probs = zip(*state.chance_outcomes())
-    #action = np.random.choice(outcomes, p=probs)
-    #state.apply_action(action)
-  #probs = deep_cfr_solver.action_probabilities(state)
-  #print(f'state is {state}')
-  #cur_player = state.current_player()
-  #legal_actions = state.legal_actions(cur_player)
-  #legal_action_mask = tf.constant(state.legal_actions_mask(cur_player), dtype=tf.float32)
-  #info_state_vector = tf.constant(state.information_state_tensor(), dtype=tf.float32)
-  #print(info_state_vector)
-  #print(legal_action_mask)
-  #if len(info_state_vector.shape) == 1:
-    #info_state_vector = tf.expand_dims(info_state_vector,axis=0)
-  #if len(legal_action_mask.shape) == 1:
-    #legal_action_mask = tf.expand_dims(legal_action_mask,axis=0)
-  #print(info_state_vector)
-  #print(legal_action_mask)
-  #inp = (info_state_vector, legal_action_mask)
-  #probs = pol.call(inp).numpy()
-  #action_probs = {action : probs[0][action] for action in legal_actions}
-  #for x in action_probs:
-    #print(f'{state.action_to_string(x)} : {action_probs[x]}')
-#
-#
 
 if __name__ == '__main__':
   main()
