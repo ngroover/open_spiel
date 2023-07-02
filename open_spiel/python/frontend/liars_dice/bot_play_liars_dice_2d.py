@@ -101,8 +101,8 @@ def main():
       #print(f'state {state}')
     else:
       draws+=1
-  print(f'p1 (policy) wins: {p1_wins}')
-  print(f'p2 (random) wins: {p2_wins}')
+  print(f'p1 (policy) wins: {p1_wins} {p1_wins/NUM_GAMES*100} %')
+  print(f'p2 (random) wins: {p2_wins} {p2_wins/NUM_GAMES*100} %')
   print(f'draws: {draws}')
 
 
