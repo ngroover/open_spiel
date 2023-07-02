@@ -47,6 +47,7 @@ class PolicyNetworkBot(pyspiel.Bot):
       info_state_vector = tf.expand_dims(info_state_vector,axis=0)
     if len(legal_action_mask.shape) == 1:
       legal_action_mask = tf.expand_dims(legal_action_mask,axis=0)
+
     inp = (info_state_vector, legal_action_mask)
     probs = self._policy.call(inp).numpy()
     action_probs = [probs[0][action] for action in legal_actions]
@@ -54,11 +55,13 @@ class PolicyNetworkBot(pyspiel.Bot):
     #print(action_probs)
     action_probs=np.array(action_probs)
     #print(action_probs)
+    #print(info_state_vector)
+    #print(legal_action_mask)
     chosen_action = self._rng.choice(legal_actions, p=action_probs)
-    for i,x in enumerate(legal_actions):
-        print(f'{x} : {state.action_to_string(x)} : {action_probs[i]}')
-    print(f'choosing {chosen_action}')
-    print('----')
+    #for i,x in enumerate(legal_actions):
+        #print(f'{x} : {state.action_to_string(x)} : {action_probs[i]}')
+    #print(f'choosing {chosen_action}')
+    #print('----')
     return chosen_action
 
   def step(self, state):
@@ -66,8 +69,8 @@ class PolicyNetworkBot(pyspiel.Bot):
 
 def main():
   policy_network = tf.keras.models.load_model('policy_network',compile=False)
-  #NUM_GAMES=10000
-  NUM_GAMES=15
+  NUM_GAMES=10000
+  #NUM_GAMES=15
   p1_wins=0
   p2_wins=0
   draws=0
@@ -84,17 +87,17 @@ def main():
         action = np.random.choice(outcomes, p=probs)
         state.apply_action(action)
       else:
-        print(f'state {state}')
+        #print(f'state {state}')
         current_player = state.current_player()
         action = bots[current_player].step(state)
         state.apply_action(action)
     if state.returns()[1] > 0:
       p2_wins+=1
       #print(f'state {state}')
-      print(f'p2 (random) wins!')
+      #print(f'p2 (random) wins!')
     elif state.returns()[0] > 0:
       p1_wins+=1
-      print(f'p1 (policy) wins!')
+      #print(f'p1 (policy) wins!')
       #print(f'state {state}')
     else:
       draws+=1
