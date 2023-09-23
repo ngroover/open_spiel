@@ -5,6 +5,7 @@ import numpy as np
 from open_spiel.python.algorithms import deep_cfr_tf2
 from open_spiel.python.algorithms import exploitability
 from open_spiel.python import policy
+from tqdm import tqdm
 
 def main():
   game = pyspiel.load_game('liars_dice(numdice=2)')
@@ -19,7 +20,9 @@ def main():
       batch_size_strategy=8,
       memory_capacity=1e7
     )
-  deep_cfr_solver.solve()
+  pbar = tqdm(desc='training', total = 10*10*2)
+  for x in deep_cfr_solver.solve_gen():
+      pbar.update()
   print('First state probabilities')
   deep_cfr_solver.save_policy_network('policy_network')
   print('saving policy')

@@ -421,6 +421,33 @@ class DeepCFRSolver(policy.Policy):
         'legal_actions': tf.io.FixedLenFeature([self._num_actions], tf.float32)
     }
 
+  def solve_gen(self):
+    """Solution logic for Deep CFR."""
+    advantage_losses = collections.defaultdict(list)
+    with tf.device(self._infer_device):
+      with contextlib.ExitStack() as stack:
+        if self._save_strategy_memories:
+          self._memories_tfrecordfile = stack.enter_context(
+              tf.io.TFRecordWriter(self._memories_tfrecordpath))
+        for i in range(self._num_iterations):
+          for p in range(self._num_players):
+            for j in range(self._num_traversals):
+              self._traverse_game_tree(self._root_node, p)
+              yield (i,p,j)
+            if self._reinitialize_advantage_networks:
+              # Re-initialize advantage network for p and train from scratch.
+              self._reinitialize_advantage_network(p)
+            advantage_losses[p].append(self._learn_advantage_network(p))
+            if self._save_advantage_networks:
+              os.makedirs(self._save_advantage_networks, exist_ok=True)
+              self._adv_networks[p].save(
+                  os.path.join(self._save_advantage_networks,
+                               f'advnet_p{p}_it{self._iteration:04}'))
+          self._iteration += 1
+    # Train policy network.
+    policy_loss = self._learn_strategy_network()
+    return self._policy_network, advantage_losses, policy_loss
+
   def solve(self):
     """Solution logic for Deep CFR."""
     advantage_losses = collections.defaultdict(list)
