@@ -36,3 +36,17 @@ You should be able to add todos and edit them
 # setting up the APIs
 
 pipenv install djangorestframework django-cors-headers
+
+Add to INSTALLED_APPS and MIDDLEWARE to backend/settings.py
+
+add CORS_ORIGIN_WHITELIST to backend/settings.py
+
+Create todo/serializers.py
+
+Create todo/views.py
+
+Modify backend/urls.py to register the url
+
+python3 manage.py runserver 0.0.0.0:8000
+
+Test the CRUD operations

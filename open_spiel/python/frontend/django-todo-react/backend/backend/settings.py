@@ -27,6 +27,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = [ '192.168.1.214' ]
 
+CORS_ORIGIN_WHITELIST = [
+        'http://localhost:3000' ]
+
 
 # Application definition
 
