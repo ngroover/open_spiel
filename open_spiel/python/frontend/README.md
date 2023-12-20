@@ -50,3 +50,15 @@ Modify backend/urls.py to register the url
 python3 manage.py runserver 0.0.0.0:8000
 
 Test the CRUD operations
+
+# start the frontend
+
+npx create-react-app frontend
+
+cd frontend
+
+npm install bootstrap reactstrap
+
+add bootstrap.css to index.js
+
+open App.js
