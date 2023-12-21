@@ -70,8 +70,10 @@ def main():
         state.apply_action(action)
     probs = deep_cfr_solver.action_probabilities(state)
     print(f'state is {state}')
-    for x in probs:
-        print(f'{state.action_to_string(x)} : {probs[x]}')
+    action_tuples = list(map(lambda x: (probs[x], x),probs))
+    action_tuples.sort(reverse=True)
+    for prob,act in action_tuples:
+        print(f'{state.action_to_string(act)} : {prob}')
 
 if __name__ == '__main__':
     main()
