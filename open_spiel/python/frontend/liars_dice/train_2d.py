@@ -6,12 +6,16 @@ from open_spiel.python.algorithms import deep_cfr_tf2
 from open_spiel.python.algorithms import exploitability
 from open_spiel.python import policy
 from tqdm import tqdm
+import shutil
+import database
+import time
 
 from dataclasses import dataclass
 
 @dataclass
 class CFRSolver:
     name : str
+    game_name : str
     policy : tuple
     advantage : tuple
     iterations : int
@@ -24,6 +28,7 @@ class CFRSolver:
 
 def capture_cfr_info():
     name=input("name: ")
+    game_name=input("game name (ex: liars_dice(numdice=2) ): ")
     policy_layers=input("policy layers (ex:8,4): ")
     policy_tuple = tuple(map(int, policy_layers.split(',')))
     advantage_layers=input("advantage layers (ex:4,2): ")
@@ -35,14 +40,14 @@ def capture_cfr_info():
     batch_size_strategy = int(input("batch size_strategy (ex: 8): "))
     memory_capacity = float(input("memory capacity (ex: 1e7): "))
 
-    return  CFRSolver(name, policy_tuple, advantage_tuple,
-                iterations, traversals, learning_rate,
-                batch_size_advantage, batch_size_strategy,
-                memory_capacity)
+    return  CFRSolver(name, game_name, policy_tuple,
+            advantage_tuple, iterations, traversals,
+            learning_rate, batch_size_advantage,
+            batch_size_strategy, memory_capacity)
 
 def main():
     cfr_solver = capture_cfr_info()
-    game = pyspiel.load_game('liars_dice(numdice=2)')
+    game = pyspiel.load_game(cfr_solver.game_name)
     deep_cfr_solver = deep_cfr_tf2.DeepCFRSolver(
         game,
         policy_network_layers=cfr_solver.policy,
@@ -58,11 +63,15 @@ def main():
     num_players=2
     total_steps = num_players*cfr_solver.iterations*cfr_solver.traversals
     pbar = tqdm(desc='training', total = total_steps)
+    start_time = time.time()
     for x in deep_cfr_solver.solve_gen():
         pbar.update()
     print('First state probabilities')
-    deep_cfr_solver.save_policy_network('policy_network')
+    dirname = 'policy_network'
+    deep_cfr_solver.save_policy_network(dirname)
     print('saving policy')
+    database.saveModelToDB(cfr_solver, dirname, start_time)
+
     state = game.new_initial_state()
     while state.is_chance_node():
         outcomes, probs = zip(*state.chance_outcomes())
