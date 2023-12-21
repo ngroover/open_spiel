@@ -16,9 +16,10 @@ class CFRSolver:
     advantage : tuple
     iterations : int
     traversals : int
+    learning_rate : float
     batch_size_advantage : int
     batch_size_strategy : int
-    memory_capacity : int
+    memory_capacity : float
 
 
 def capture_cfr_info():
@@ -29,33 +30,34 @@ def capture_cfr_info():
     advantage_tuple = tuple(map(int, advantage_layers.split(',')))
     iterations = int(input("iterations (ex: 10): "))
     traversals = int(input("traversals (ex: 10): "))
+    learning_rate = float(input("learning rate (ex: 1e-3): "))
     batch_size_advantage = int(input("batch size advantage (ex: 8): "))
     batch_size_strategy = int(input("batch size_strategy (ex: 8): "))
-    memory_capacity = int(float(input("memory capacity (ex: 1e7): ")))
+    memory_capacity = float(input("memory capacity (ex: 1e7): "))
 
-    cfr_solver = CFRSolver(name, policy_tuple, advantage_tuple,
-                iterations, traversals, batch_size_advantage,
-                batch_size_strategy, memory_capacity)
-    print(cfr_solver)
-
-  
+    return  CFRSolver(name, policy_tuple, advantage_tuple,
+                iterations, traversals, learning_rate,
+                batch_size_advantage, batch_size_strategy,
+                memory_capacity)
 
 def main():
-    capture_cfr_info()
-    return 0
+    cfr_solver = capture_cfr_info()
     game = pyspiel.load_game('liars_dice(numdice=2)')
     deep_cfr_solver = deep_cfr_tf2.DeepCFRSolver(
         game,
-        policy_network_layers=(8,4),
-        advantage_network_layers=(4,2),
-        num_iterations=10,
-        num_traversals=10,
-        learning_rate=1e-3,
-        batch_size_advantage=8,
-        batch_size_strategy=8,
-        memory_capacity=1e7
+        policy_network_layers=cfr_solver.policy,
+        advantage_network_layers=cfr_solver.advantage,
+        num_iterations=cfr_solver.iterations,
+        num_traversals=cfr_solver.traversals,
+        learning_rate=cfr_solver.learning_rate,
+        batch_size_advantage=cfr_solver.batch_size_advantage,
+        batch_size_strategy=cfr_solver.batch_size_strategy,
+        memory_capacity=cfr_solver.memory_capacity
     )
-    pbar = tqdm(desc='training', total = 10*10*2)
+    # TODO: fetch from game
+    num_players=2
+    total_steps = num_players*cfr_solver.iterations*cfr_solver.traversals
+    pbar = tqdm(desc='training', total = total_steps)
     for x in deep_cfr_solver.solve_gen():
         pbar.update()
     print('First state probabilities')
