@@ -13,6 +13,7 @@ from open_spiel.python.algorithms import exploitability
 from open_spiel.python import policy
 from open_spiel.python.bots.uniform_random import UniformRandomBot
 import database
+from tqdm import tqdm
 
 class PolicyNetworkBot(pyspiel.Bot):
     """Samples an action from action probabilities based on a policy network.
@@ -76,7 +77,7 @@ def main():
     model_folder='player1_model'
     database.dumpAgentModel(agent_name, model_folder)
     policy_network = tf.keras.models.load_model(model_folder,compile=False)
-    NUM_GAMES=10000
+    NUM_GAMES=100000
     #NUM_GAMES=15
     p1_wins=0
     p2_wins=0
@@ -84,6 +85,7 @@ def main():
     bots=[PolicyNetworkBot(0,np.random,policy_network),UniformRandomBot(1,np.random)]
     game = pyspiel.load_game(game_name)
 
+    pbar = tqdm(desc='playing', total = NUM_GAMES)
     for _ in range(NUM_GAMES):
         state = game.new_initial_state()
         for bot in bots:
@@ -108,10 +110,11 @@ def main():
             #print(f'state {state}')
         else:
             draws+=1
+        pbar.update()
     print(f'p1 (policy) wins: {p1_wins} {p1_wins/NUM_GAMES*100} %')
     print(f'p2 (random) wins: {p2_wins} {p2_wins/NUM_GAMES*100} %')
     print(f'draws: {draws}')
-
+    database.addRandomGames(agent_name, p1_wins, NUM_GAMES)
 
 if __name__ == '__main__':
     main()

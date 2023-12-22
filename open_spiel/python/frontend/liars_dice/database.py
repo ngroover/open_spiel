@@ -4,14 +4,18 @@ import sqlite3
 import shutil
 import os
 
-agent_table_create_query = "CREATE TABLE IF NOT EXISTS agents(name string PRIMARY KEY, game_name string, start_time datetime, finish_time datetime, model blob, policy_layers, advantage_layers, num_iterations, traversals, learning_rate, batch_size_advantage, batch_size_strategy, memory_capacity, total_games_vs_random, total_wins_vs_random)"
+agent_table_create_query = "CREATE TABLE IF NOT EXISTS agents(name TEXT PRIMARY KEY, game_name TEXT, start_time datetime, finish_time datetime, model BLOB, policy_layers TEXT, advantage_layers TEXT, num_iterations INTEGER, traversals INTEGER, learning_rate REAL, batch_size_advantage INTEGER, batch_size_strategy INTEGER, memory_capacity REAL, total_games_vs_random INTEGER, total_wins_vs_random INTEGER)"
 
-insert_agent_query = "INSERT INTO agents (name, game_name, start_time, finish_time, model, policy_layers, advantage_layers, num_iterations, traversals, learning_rate, batch_size_advantage, batch_size_strategy, memory_capacity) VALUES(?, ?, datetime(?, 'unixepoch'), datetime('now'), ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+insert_agent_query = "INSERT INTO agents (name, game_name, start_time, finish_time, model, policy_layers, advantage_layers, num_iterations, traversals, learning_rate, batch_size_advantage, batch_size_strategy, memory_capacity, total_games_vs_random, total_wins_vs_random) VALUES(?, ?, datetime(?, 'unixepoch'), datetime('now'), ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0)"
 
 select_agents_by_game_query = "SELECT name FROM agents WHERE game_name = ?;"
 
 select_agent_by_name= "SELECT model FROM agents WHERE name = ?;"
-select_agent_stats_by_game = "SELECT name, policy_layers, advantage_layers, num_iterations, traversals, learning_rate, batch_size_advantage, batch_size_strategy, memory_capacity total_games_vs_random, CAST(total_wins_vs_random AS REAL)/CAST(total_games_vs_random AS REAL) AS win_rate FROM agents WHERE game_name = ? AND total_games_vs_random > 0"
+select_agent_stats_by_game = "SELECT name, policy_layers, advantage_layers, num_iterations, traversals, learning_rate, batch_size_advantage, batch_size_strategy, memory_capacity, total_games_vs_random, CAST(total_wins_vs_random AS REAL)/CAST(total_games_vs_random AS REAL)*100 AS win_rate FROM agents WHERE game_name = ? AND total_games_vs_random > 0"
+
+get_agent_winrate = "SELECT total_wins_vs_random, total_games_vs_random FROM agents WHERE name = ?;"
+
+update_agent_winrate = "UPDATE agents SET total_wins_vs_random = ?, total_games_vs_random = ? WHERE name = ?;"
 
 def saveModelToDB(cfrsolver, model_folder, start_time):
     zipname=model_folder+'.zip'
@@ -82,5 +86,15 @@ def dumpStats(game_name):
     for row in results:
         print(row)
     cur.close()
-    
+
+def addRandomGames(name, wins, games):
+    conn = sqlite3.connect('games.db')
+    cur = conn.cursor()
+    results = cur.execute(get_agent_winrate, (name,))
+    first_result = results.fetchone()
+    total_wins = first_result[0] + wins
+    total_games = first_result[1] + games
+    cur.execute(update_agent_winrate, (total_wins, total_games, name))
+    conn.commit()
+    cur.close()
     
