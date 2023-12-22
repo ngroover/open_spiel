@@ -17,6 +17,13 @@ get_agent_winrate = "SELECT total_wins_vs_random, total_games_vs_random FROM age
 
 update_agent_winrate = "UPDATE agents SET total_wins_vs_random = ?, total_games_vs_random = ? WHERE name = ?;"
 
+create_matchups_table = "CREATE TABLE IF NOT EXISTS matchups(p1_name TEXT NOT NULL, p2_name TEXT NOT NULL, p1_wins INTEGER, p2_wins INTEGER, PRIMARY KEY (p1_name, p2_name), FOREIGN KEY(p1_name) REFERENCES agents(name), FOREIGN KEY(p2_name) REFERENCES agents(name));"
+
+get_matchups_query = "SELECT p1_wins, p2_wins FROM matchups WHERE p1_name = ? AND p2_name = ?"
+
+insert_matchup= "INSERT OR IGNORE INTO matchups (p1_name, p2_name) VALUES (?, ?);"
+update_matchup = "UPDATE matchups SET p1_wins = ?, p2_wins = ? WHERE p1_name = ? AND p2_name = ?;"
+
 def saveModelToDB(cfrsolver, model_folder, start_time):
     zipname=model_folder+'.zip'
     if os.path.isfile(zipname):
@@ -98,3 +105,12 @@ def addRandomGames(name, wins, games):
     conn.commit()
     cur.close()
     
+def updateMatchupData(p1_name, p2_name, p1_wins, p2_wins):
+    conn = sqlite3.connect('games.db')
+    cur = conn.cursor()
+    cur.execute("PRAGMA foreign_keys = ON;")    # we need to enable foreign keys every time
+    cur.execute(create_matchups_table)
+    cur.execute(insert_matchup, (p1_name, p2_name))
+    cur.execute(update_matchup, (p1_name,p2_name,p1_wins,p2_wins))
+    conn.commit()
+    cur.close()

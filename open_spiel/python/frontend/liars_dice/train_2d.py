@@ -66,6 +66,7 @@ def main():
     start_time = time.time()
     for x in deep_cfr_solver.solve_gen():
         pbar.update()
+    pbar.close()
     print('First state probabilities')
     dirname = 'policy_network'
     deep_cfr_solver.save_policy_network(dirname)
