@@ -11,6 +11,7 @@ insert_agent_query = "INSERT INTO agents (name, game_name, start_time, finish_ti
 select_agents_by_game_query = "SELECT name FROM agents WHERE game_name = ?;"
 
 select_agent_by_name= "SELECT model FROM agents WHERE name = ?;"
+select_agent_stats_by_game = "SELECT name, policy_layers, advantage_layers, num_iterations, traversals, learning_rate, batch_size_advantage, batch_size_strategy, memory_capacity total_games_vs_random, CAST(total_wins_vs_random AS REAL)/CAST(total_games_vs_random AS REAL) AS win_rate FROM agents WHERE game_name = ? AND total_games_vs_random > 0"
 
 def saveModelToDB(cfrsolver, model_folder, start_time):
     zipname=model_folder+'.zip'
@@ -71,5 +72,15 @@ def dumpAgentModel(name, folder):
     full_temp_path=os.path.join(folder, temp_zip)
     writeBytesToFile(full_temp_path, first_result[0])
     shutil.unpack_archive(full_temp_path, folder, 'zip',)
+    cur.close()
+
+def dumpStats(game_name):
+    conn = sqlite3.connect('games.db')
+    cur = conn.cursor()
+    results = cur.execute(select_agent_stats_by_game, (game_name,))
+    print(list(map(lambda x: x[0], results.description)))
+    for row in results:
+        print(row)
+    cur.close()
     
     
