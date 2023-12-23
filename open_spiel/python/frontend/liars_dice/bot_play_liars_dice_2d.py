@@ -77,7 +77,7 @@ def main():
     model_folder='player1_model'
     database.dumpAgentModel(agent_name, model_folder)
     policy_network = tf.keras.models.load_model(model_folder,compile=False)
-    NUM_GAMES=100000
+    NUM_GAMES=10000
     #NUM_GAMES=15
     p1_wins=0
     p2_wins=0
@@ -111,6 +111,7 @@ def main():
         else:
             draws+=1
         pbar.update()
+    pbar.close()
     print(f'p1 (policy) wins: {p1_wins} {p1_wins/NUM_GAMES*100} %')
     print(f'p2 (random) wins: {p2_wins} {p2_wins/NUM_GAMES*100} %')
     print(f'draws: {draws}')
