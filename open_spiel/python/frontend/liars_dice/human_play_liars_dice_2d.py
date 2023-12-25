@@ -74,7 +74,7 @@ def main():
     print('Agents:')
     database.listAgentModels(game_name)
     agent_name = input("name: ")
-    model_folder='policy_model'
+    model_folder='human_play_policy_model'
     database.dumpAgentModel(agent_name, model_folder)
     policy_network = tf.keras.models.load_model(model_folder,compile=False)
     #NUM_GAMES=10000

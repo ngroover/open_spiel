@@ -68,7 +68,7 @@ def main():
         pbar.update()
     pbar.close()
     print('First state probabilities')
-    dirname = 'policy_network'
+    dirname = 'training_policy_network'
     deep_cfr_solver.save_policy_network(dirname)
     print('saving policy')
     database.saveModelToDB(cfr_solver, dirname, start_time)
