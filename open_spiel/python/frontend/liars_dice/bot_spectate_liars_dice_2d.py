@@ -60,8 +60,13 @@ class PolicyNetworkBot(pyspiel.Bot):
         #print(info_state_vector)
         #print(legal_action_mask)
         chosen_action = self._rng.choice(legal_actions, p=action_probs)
-        #for i,x in enumerate(legal_actions):
-            #print(f'{x} : {state.action_to_string(x)} : {action_probs[i]}')
+        action_tuples = list(zip(action_probs, legal_actions))
+        #print(action_tuples)
+        #print(legal_actions)
+        #print(action_probs)
+        action_tuples.sort(reverse=True)
+        for prob,act in action_tuples:
+            print(f'{state.action_to_string(act)} : {prob}')
         #print(f'choosing {chosen_action}')
         #print('----')
         return chosen_action
@@ -82,7 +87,7 @@ def main():
     print('Agents:')
     database.listAgentModels(game_name)
     agent_name = input("name: ")
-    model_folder='player1_model'
+    model_folder='player1_model_spectate'
     database.dumpAgentModel(agent_name, model_folder)
     policy_network = tf.keras.models.load_model(model_folder,compile=False)
     NUM_GAMES=0
@@ -126,7 +131,6 @@ def main():
     print(f'p1 (policy) wins: {p1_wins} {p1_wins/NUM_GAMES*100} %')
     print(f'p2 (random) wins: {p2_wins} {p2_wins/NUM_GAMES*100} %')
     print(f'draws: {draws}')
-    database.addRandomGames(agent_name, p1_wins, NUM_GAMES)
 
 if __name__ == '__main__':
     main()
